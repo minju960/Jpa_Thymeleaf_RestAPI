@@ -1,7 +1,7 @@
-package jpastudy.jpashop.domain;
+package jpastudy.jpashop.service;
 
+import jpastudy.jpashop.domain.Member;
 import jpastudy.jpashop.repository.MemberRepository;
-import jpastudy.jpashop.service.MemberService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

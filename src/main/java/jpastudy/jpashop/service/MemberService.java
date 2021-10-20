@@ -4,7 +4,6 @@ import jpastudy.jpashop.domain.Member;
 import jpastudy.jpashop.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -25,7 +24,7 @@ public class MemberService {
         }
     }
     // 회원가입
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     public Long join(Member member) {
         validateDuplicateMember(member); //중복 회원 검증
         memberRepository.save(member);

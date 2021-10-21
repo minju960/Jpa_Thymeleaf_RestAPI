@@ -57,6 +57,20 @@ public class OrderApiController {
                 .collect(Collectors.toList());      //List<OrderDto>
     }
 
+    /**
+     * 엔티티를 DTO로 변환해서 노출, Fetch Join을 사용해서 성능 최적화
+     * 문제점 : toMany 의존관계 객체들의 페이징 처리가 안된다
+     */
+    @GetMapping("/api/v3/orders")
+    public List<OrderDto> ordersV3() {
+        List<Order> orders = orderRepository.findAllWithItem();
+        List<OrderDto> result = orders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(Collectors.toList());
+        return result;
+    }
+
+
     //응답 요청에 사용할 DTO Inner Class 선언
     @Data
     static class OrderItemDto {

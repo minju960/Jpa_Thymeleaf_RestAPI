@@ -53,4 +53,14 @@ public class OrderRepository {
         }
         return QMember.member.name.contains(memberName);
     }
+
+    // 성능 최적화를 위한 Fetch Join 사용     // Fetch Join 단점 : toOne에서는 상관없는데 toMany에서는 페이징처리가 안된다는 문제점이 있다
+    public List<Order> findAllWithMemberDelivery() {
+        return em.createQuery(
+                        "select o from Order o" +
+                                " join fetch o.member m" +
+                                " join fetch o.delivery d", Order.class)
+                .getResultList();
+    }
+
 }

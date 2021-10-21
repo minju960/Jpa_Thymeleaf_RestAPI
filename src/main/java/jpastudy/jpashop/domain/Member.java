@@ -1,5 +1,6 @@
 package jpastudy.jpashop.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,12 +16,14 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
+//    @NotEmpty
     private String name;
 
     @Embedded   // 포함하는 쪽
     private Address address;
 
     // Order와 1:N 관계
+    @JsonIgnore
     @OneToMany(mappedBy = "member")     //member를 참조한다
     private List<Order> orders = new ArrayList<>();
 

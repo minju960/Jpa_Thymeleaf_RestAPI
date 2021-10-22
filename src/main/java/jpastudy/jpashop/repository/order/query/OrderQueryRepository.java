@@ -71,6 +71,7 @@ public class OrderQueryRepository {
         List<Long> orderIds = orders.stream()     //Stream<OrderQueryDto>
                 .map(order -> order.getOrderId())       //Stream<Long>
                 .collect(Collectors.toList());      //List<Long>
+
         List<OrderItemQueryDto> orderItems = em.createQuery(
                         "select new jpastudy.jpashop.repository.order.query.OrderItemQueryDto(oi.order.id, i.name, oi.orderPrice, oi.count)" +
                                 " from OrderItem oi" +

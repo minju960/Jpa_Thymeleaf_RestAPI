@@ -5,6 +5,7 @@ import jpastudy.jpashop.repository.OrderRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -70,6 +71,19 @@ public class OrderApiController {
         return result;
     }
 
+    /**
+     * 엔티티를 DTO로 변환해서 노출, Fetch Join을 사용해서 성능 최적화
+     * ToMany 관계인 엔티티를 가져올 때 페이징 처리 안되는 문제를 해결하기 위해
+     * ToOne 관계인 엔티티는 Fetch Join으로 가져오고
+     * ToMany 관계인 엔티티는 Hibernate.default_batch_fetch_size 설정하기
+     */
+    @GetMapping("/api/v3.2/orders")
+    public List<OrderDto> ordersV3_Paging(@RequestParam(value = "offset", defaultValue = "0") int offset, @RequestParam(value = "limit", defaultValue = "1") int limit) {
+        List<Order> orderList = orderRepository.findAllWithMemberDelivery(offset, limit);
+        return orderList.stream()      //Stream<Order>
+                .map(order -> new OrderDto(order))      //Stream<OrderDto>
+                .collect(Collectors.toList());       //List<OrderDto
+    }
 
     //응답 요청에 사용할 DTO Inner Class 선언
     @Data
@@ -78,7 +92,7 @@ public class OrderApiController {
         private int orderPrice; //주문 가격
         private int count; //주문 수량
         public OrderItemDto(OrderItem orderItem) {
-            itemName = orderItem.getItem().getName();
+            itemName = orderItem.getItem().getName();       // Lazy Loading 초기화
             orderPrice = orderItem.getOrderPrice();
             count = orderItem.getCount();
         }
@@ -95,11 +109,13 @@ public class OrderApiController {
 
         public OrderDto(Order order) {
             orderId = order.getId();
-            name = order.getMember().getName();
+            name = order.getMember().getName();     // Lazy Loading 초기화
             orderDate = order.getOrderDate();
             orderStatus = order.getStatus();
-            address = order.getDelivery().getAddress();
-            orderItems = order.getOrderItems().stream()     //Stream<OrderItem>
+            address = order.getDelivery().getAddress();     // Lazy Loading 초기화
+
+            orderItems = order.getOrderItems()      // Lazy Loading 초기화
+                    .stream()     //Stream<OrderItem>
                     .map(orderItem -> new OrderItemDto(orderItem))      //Stream<OrderItemDto>
                     .collect(toList());      //List<OrderItemDto>
         }

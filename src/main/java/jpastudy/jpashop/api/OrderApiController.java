@@ -2,6 +2,8 @@ package jpastudy.jpashop.api;
 
 import jpastudy.jpashop.domain.*;
 import jpastudy.jpashop.repository.OrderRepository;
+import jpastudy.jpashop.repository.order.query.OrderQueryDto;
+import jpastudy.jpashop.repository.order.query.OrderQueryRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -83,6 +85,16 @@ public class OrderApiController {
         return orderList.stream()      //Stream<Order>
                 .map(order -> new OrderDto(order))      //Stream<OrderDto>
                 .collect(Collectors.toList());       //List<OrderDto
+    }
+
+    /**
+     * 쿼리를 수행할 때 DTO 저장했기 때문에 그대로 사용하면 된다
+     */
+    private final OrderQueryRepository orderQueryRepository;
+    @GetMapping("/api/v4/orders")
+    public List<OrderQueryDto> ordersV4() {
+        return orderQueryRepository.findOrderQueryDtos();
+
     }
 
     //응답 요청에 사용할 DTO Inner Class 선언

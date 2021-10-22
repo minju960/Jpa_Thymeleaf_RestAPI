@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -42,7 +44,6 @@ public class OrderQueryRepository {
 
     /**
      * OrderQueryDto 가 참조하는 OrderItemQueryDto를 채워넣기
-     * @return
      */
     public List<OrderQueryDto> findOrderQueryDtos() {
         //루트 조회(toOne 코드를 모두 한번에 조회)
@@ -56,6 +57,36 @@ public class OrderQueryRepository {
         });
         return orderQueryDtos;
     } //findOrderQueryDtos
+
+    /**
+     * OrderQueryDto 가 참조하는 OrderItemQueryDto를 채워넣기
+     * Order, Member, Delivery : 쿼리 1번
+     * Order, OrderItem, Item : 쿼리 1번
+     * Refactoring 이전 코드
+     */
+    public List<OrderQueryDto> findOrdersQueryDtos_optimize_before() {
+        List<OrderQueryDto> orders = findOrders();
+        //OrderId 목록을 List<Long> 형태로 추출
+        //List<OrderQueryDto> --> List<Long>
+        List<Long> orderIds = orders.stream()     //Stream<OrderQueryDto>
+                .map(order -> order.getOrderId())       //Stream<Long>
+                .collect(Collectors.toList());      //List<Long>
+        List<OrderItemQueryDto> orderItems = em.createQuery(
+                        "select new jpastudy.jpashop.repository.order.query.OrderItemQueryDto(oi.order.id, i.name, oi.orderPrice, oi.count)" +
+                                " from OrderItem oi" +
+                                " join oi.item i" +
+                                " where oi.order.id in :orderIds", OrderItemQueryDto.class)
+                .setParameter("orderIds", orderIds)
+                .getResultList();
+
+        //Map<Long, List<OrderItemQueryDto>> 만들기
+        //Map<OrderId(주문번호), OrderItemQueryDto 목록>
+        Map<Long, List<OrderItemQueryDto>> orderItemMap =
+                orderItems.stream()     //Stream<List<OrderItemQueryDto>>
+                            .collect(Collectors.groupingBy(orderItem -> orderItem.getOrderId()));
+        orders.forEach(order -> order.setOrderItems(orderItemMap.get(order.getOrderId())));
+        return orders;
+    }
 }//class
 
 
